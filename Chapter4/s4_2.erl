@@ -8,10 +8,12 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % module S4_2 where
 -module(s4_2).
--export([]).
+-export([tcomp/1, tdouble/1, tsum/1, tcompA/1, depth/1, count/1]).
+-export([count_depth/1, count_depthA/1, perc/2, comp/1, compA/2, compB/1]).
+-export([inorder/1, inorderA/1, inorderB/2, btA/0, flipT/1, tinsert/2]).
+-export([btSz/0, tinsertSz/2, bt/0]).
 
-% data BinTree a = Empty
-%                | NodeBT a (BinTree a) (BinTree a)
+% data BinTree a = Empty | NodeBT a (BinTree a) (BinTree a)
 %     deriving Show
 
 % -- 4.2.2 composing tree operations
@@ -23,7 +25,7 @@ tcomp(T) -> tsum(tdouble(T)).
 % tdouble       :: BinTree Int -> BinTree Int
 % tdouble Empty = Empty
 % tdouble (NodeBT v lf rt) = NodeBT (2*v) (tdouble lf) (tdouble rt)
-tdouble(empty) -> Empty;
+tdouble(empty) -> empty;
 tdouble({V, LF, RT}) -> {2*V,  tdouble(LF), tdouble(RT)}.
 
 % tsum       :: BinTree Int -> Int
@@ -45,13 +47,13 @@ tcompA({V, LF, RT}) -> 2*V + tcompA(LF) + tcomp(RT).
 % depth Empty            = 0
 % depth (NodeBT _ lf rt) = 1 + max (depth lf) (depth rt)
 depth(empty) -> 0;
-depth({_, LF, RT) -> 1 + max(depth(LF), depth(RT)).
+depth({_, LF, RT}) -> 1 + max(depth(LF), depth(RT)).
 
 % count                  :: BinTree a -> Int
 % count Empty            = 1
 % count (NodeBT _ lf rt) = count lf + count rt
 count(empty) -> 1;
-count({_, LF, RT) -> count(LF) + count(RT).
+count({_, LF, RT}) -> count(LF) + count(RT).
 
 % count_depth t = (count t, depth t)
 count_depth(T) -> {count(T), depth(T)}.
@@ -62,7 +64,7 @@ count_depth(T) -> {count(T), depth(T)}.
 %     where (c1,d1) = count_depth' lf
 %           (c2,d2) = count_depth' rt
 count_depthA(empty) -> {1,0};
-count_depthA({V, LF, RT}) ->
+count_depthA({_, LF, RT}) ->
     {C1,D1} = count_depthA(LF),
     {C2,D2} = count_depthA(RT),
     {C1 + C2, 1 + max(D1,D2)}.
@@ -71,7 +73,7 @@ count_depthA({V, LF, RT}) ->
 % perc x (NodeBT v lf rt) = NodeBT (fromInt v/ fromInt x)
 %                                  (perc x lf)
 %                                  (perc x rt)
-perc(X, empty) -> empty;
+perc(_, empty) -> empty;
 perc(X, {V, LF, RT}) -> {V/X, perc(X, LF), perc(X, RT)}.
 
 % comp t = perc (tsum t) t
@@ -79,19 +81,22 @@ comp(T) -> perc(tsum(T), T).
 
 % -- in one pass
 % comp'' t = t'
-%     where (t', x) = comp' x t 
-%% ??? what x ???
+%     where (t', x) = comp' x t
+%%
+%% nb: leaving this as a warning to those who come after
+%%
+compB(T) -> {T1, X} = compA(X, T), T1.
 
 % comp' x Empty = (Empty,0)
 % comp' x (NodeBT v lf rt) = (NodeBT (fromInt v / fromInt x) p1 p2,
 %                             v + s1 + s2)
 %     where (p1,s1) = comp' x lf
 %           (p2,s2) = comp' x rt
-compA(X, empty) -> {empty,0};
+compA(_, empty) -> {empty,0};
 compA(X, {V, LF, RT}) -> 
     {P1,S1} = compA(X, LF),
     {P2,S2} = compA(X, RT),
-    {V/X, P1, P2, V + S1 + S2).
+    {{V/X, P1, P2}, {V + S1 + S2}}.
 
 % -- 4.2.4 Removing appends revisited
 
@@ -103,23 +108,27 @@ inorder({A, LF, RT}) -> inorder(LF) ++ [A] ++ inorder(RT).
 % inorder' t = inorder'' t []
 %     where inorder'' Empty z = z
 %           inorder'' (NodeBT a lf rt) z = inorder'' lf (a:(inorder'' rt z))
+inorderA(T) -> inorderB(T, []).
 inorderB(empty, Z) -> Z;
 inorderB({A, LF, RT}, Z) -> inorderB(LF, [A|inorderB(RT, Z)]).
-inorderA(T) -> inorderB(T, []).
 
 % -- 4.2.5 Copying in trees
+%% or not
 
-% data BinTree'' a = Leaf'' a
-%                  | Node'' (BinTree'' a) (BinTree'' a)
+% data BinTree'' a = Leaf'' a | Node'' (BinTree'' a) (BinTree'' a)
 %     deriving Show
 
 % bt' = Node'' (Node'' (Leaf'' 1) (Leaf'' 2))
 %              (Node'' (Leaf'' 3) (Leaf'' 4))
+btA() ->{{1, 2}, {3, 4}}.
 
 % flipT             :: BinTree'' a -> BinTree'' a
 % flipT (Node'' a b) = Node'' (flipT b) (flipT a)
 % --flipT (Leaf'' a)   = Leaf'' a
 % flipT x@(Leaf'' a) = x
+%% no explicit memoiziation in Erlang so...
+flipT({A, B}) -> {flipT(B), flipT(A)};
+flipT(A) -> A.
 
 % -- 4.2.6 Storing additional information in the tree
 
@@ -127,16 +136,24 @@ inorderA(T) -> inorderB(T, []).
 % tinsert v (NodeBT w lf rt)
 %     | (count lf) <= (count rt) = NodeBT w (tinsert v lf) rt
 %     | otherwise                = NodeBT w lf (tinsert v rt)
+tinsert(V, empty) -> {V, empty, empty};
+tinsert(V, {W, LF, RT}) ->
+    case count(LF) =< count(RT) of
+	true -> {W, tinsert(V, LF), RT};
+	false -> {W, LF, tinsert(V, RT)}
+    end.
 
-% data BinTreeSz a = EmptySz
-%                  | NodeBTSz (Int,Int) a (BinTreeSz a) (BinTreeSz a)
+% data BinTreeSz a = EmptySz | NodeBTSz (Int,Int) a (BinTreeSz a) (BinTreeSz a)
 %     deriving Show
 
-% btSz = (NodeBTSz (3,2) 5 (NodeBTSz (1,1) 8 (NodeBTSz (0,0) 3 EmptySz EmptySz)
-%                                            (NodeBTSz (0,0) 1 EmptySz EmptySz))
-%                          (NodeBTSz (0,1) 6 EmptySz
-%                                            (NodeBTSz (0,0) 4 EmptySz EmptySz)))
-
+%btSz = (NodeBTSz (3,2) 5 
+%	 (NodeBTSz (1,1) 8 (NodeBTSz (0,0) 3 EmptySz EmptySz)
+%			   (NodeBTSz (0,0) 1 EmptySz EmptySz))
+%	 (NodeBTSz (0,1) 6 EmptySz (NodeBTSz (0,0) 4 EmptySz EmptySz)))
+btSz() -> {{3,2}, 5, 
+	   {{1,1}, 8, {{0,0}, 3, emptySz, emptySz},
+	    {{0,0}, 1, emptySz, emptySz}},
+	   {{0,1}, 6, emptySz, {{0,0}, 4, emptySz, emptySz}}}.
 
 % tinsertSz :: a -> BinTreeSz a -> BinTreeSz a
 % tinsertSz v EmptySz
@@ -144,44 +161,51 @@ inorderA(T) -> inorderB(T, []).
 % tinsertSz v (NodeBTSz (s1,s2) w lf rt)
 %     | s1 <= s2 = NodeBTSz (s1+1, s2) w (tinsertSz v lf) rt
 %     | otherwise = NodeBTSz (s1,s2+1) w lf (tinsertSz v rt)
+tinsertSz(V, emptySz) -> 
+    {{0,0}, V, emptySz, emptySz};
+tinsertSz(V, {{S1,S2}, W, LF, RT}) when S1 =< S2 ->
+    {{S1+1, S2}, W, LF, tinsertSz(V, RT)};
+tinsertSz(V, {{S1,S2}, W, LF, RT}) when S1 > S2 ->
+    {{S1,S2+1}, W, LF, tinsertSz(V, RT)}.
 
-% bt = (NodeBT 5 (NodeBT 8 (NodeBT 3 Empty Empty) (NodeBT 1 Empty Empty))
-%                (NodeBT 6 Empty (NodeBT 4 Empty Empty)))
+%bt = (NodeBT 5 (NodeBT 8 (NodeBT 3 Empty Empty) (NodeBT 1 Empty Empty))
+%               (NodeBT 6 Empty (NodeBT 4 Empty Empty)))
+bt() -> {5, {8, {3, empty, empty}, {1, empty, empty}},
+	      {6, empty, {4, empty, empty}}}.
 
 % {- Examples of evaluations and results
- 
-% ? flipT bt'
+% ? flipT(s4_2:btA()).
 % Node'' (Node'' (Leaf'' 4) (Leaf'' 3)) (Node'' (Leaf'' 2) (Leaf'' 1))
-% ? depth bt
+% ? depth(s4_2:bt()).
 % 3
-% ? count bt
+% ? count(s4_2:bt()).
 % 7
-% ? count_depth bt
+% ? count_depth(s4_2:bt()).
 % (7,3)
-% ? count_depth bt
+% ? count_depth(s4_2:bt()).
 % (7,3)
-% ? tsum bt
+% ? tsum(s4_2:bt).
 % 27
-% ? perc 27 bt
+% ? perc(27, s4_2:bt()).
 % NodeBT 0.185185 (NodeBT 0.296296 (NodeBT 0.111111 Empty Empty) (NodeBT 0.037037 Empty Empty)) (NodeBT 0.222222 Empty (NodeBT 0.148148 Empty Empty))
-% ? comp bt
+% ? comp(s4_2:bt()).
 % NodeBT 0.185185 (NodeBT 0.296296 (NodeBT 0.111111 Empty Empty) (NodeBT 0.037037 Empty Empty)) (NodeBT 0.222222 Empty (NodeBT 0.148148 Empty Empty))
-% ? comp'' bt
+% ? compB(s4_2:bt()).
 % NodeBT 0.185185 (NodeBT 0.296296 (NodeBT 0.111111 Empty Empty) (NodeBT 0.037037 Empty Empty)) (NodeBT 0.222222 Empty (NodeBT 0.148148 Empty Empty))
-% ? tdouble bt
+% ? tdouble(s4_2:bt()).
 % NodeBT 10 (NodeBT 16 (NodeBT 6 Empty Empty) (NodeBT 2 Empty Empty)) (NodeBT 12 Empty (NodeBT 8 Empty Empty))
-% ? tcomp bt
+% ? tcomp(s4_2:bt()).
 % 54
-% ? tcomp' bt
+% ? tcompA(s4_2:bt()).
 % 54
-% ? inorder bt
+% ? inorder(s4_2:bt()).
 % [3, 8, 1, 5, 6, 4]
-% ? inorder' bt
+% ? inorderA(s4_2:bt()).
 % [3, 8, 1, 5, 6, 4]
-% ? bt
+% ? s4_2:bt().
 % NodeBT 5 (NodeBT 8 (NodeBT 3 Empty Empty) (NodeBT 1 Empty Empty)) (NodeBT 6 Empty (NodeBT 4 Empty Empty))
-% ? tinsert 10 bt
+% ? tinsert(10, s4_2:bt()).
 % NodeBT 5 (NodeBT 8 (NodeBT 3 Empty Empty) (NodeBT 1 Empty Empty)) (NodeBT 6 (NodeBT 10 Empty Empty) (NodeBT 4 Empty Empty))
-% ? tinsertSz 3 btSz
+% ? tinsertSz(3,s4_2:btSz()).
 % NodeBTSz (3,3) 5 (NodeBTSz (1,1) 8 (NodeBTSz (0,0) 3 EmptySz EmptySz) (NodeBTSz (0,0) 1 EmptySz EmptySz)) (NodeBTSz (1,1) 6 (NodeBTSz (0,0) 3 EmptySz EmptySz) (NodeBTSz (0,0) 4 EmptySz EmptySz))
 % -}

@@ -6,6 +6,10 @@
 %
 % Erlang translations by Stephen Wight, northwight@gmail.com
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%% nb: PUNTED - array module is a square peg for round hole. Later!
+%%
+
 %module S4_3 where
 
 % import Array

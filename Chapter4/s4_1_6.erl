@@ -8,7 +8,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % module S4_1_6 where
 -module(s4_1_6).
--export([average/1, averageB/1]).
+-export([average/1, averageA/1, averageB/1]).
 
 sum([]) -> 0;
 sum([X|XS]) -> X + sum(XS).
@@ -21,7 +21,9 @@ average(XS) -> sum(XS) / length(XS).
 %           av []     = (0,0)
 %           av (x:xs) = (x+s,n+1)
 %               where (s,n) = av xs
-%% without LET I'm befuddled as to how to emulate that one. sorry.
+av([]) -> {0,0};
+av([X|XS]) -> {S,N} = av(XS), {X+S, N+1}.
+averageA(XS) -> {S,N} = av(XS), S/N.
 
 % average'' xs = av' xs 0 0
 %     where av' []     s n = s / fromInt n
