@@ -8,6 +8,9 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % module PQueue(PQueue,emptyPQ,pqEmpty,enPQ,dePQ,frontPQ) where
 % import Heap
+-module(pqueue).
+-export([emptyPQ/0, pqEmpty/1, enPQ/2, dePQ/1, frontPQ/1]).
+-import(heap, [emptyHeap/0, heapEmpty/1, findHeap/1, insHeap/2, delHeap/1]).
 
 %% emptyPQ :: (Ord a) => PQueue a 
 %% pqEmpty :: (Ord a) => PQueue a -> Bool 
@@ -39,19 +42,25 @@
 %% -- end of List implementation --}
 
 
-%% {-- Heap implementation --}
+% {-- Heap implementation --}
+%% nb: interesting... removal of types makes this a degenerate enterprise...
 
-%% newtype PQueue a = PQ (Heap a)
-%%     deriving Show
+% newtype PQueue a = PQ (Heap a)
+%     deriving Show
 
-%% emptyPQ = PQ emptyHeap
+% emptyPQ = PQ emptyHeap
+emptyPQ() -> emptyHeap().
 
-%% pqEmpty (PQ h) = heapEmpty h
+% pqEmpty (PQ h) = heapEmpty h
+pqEmpty(H) -> heapEmpty(H).
 
-%% enPQ v (PQ h) = PQ (insHeap v h)
+% enPQ v (PQ h) = PQ (insHeap v h)
+enPQ(V, H) -> insHeap(V, H).
 
-%% frontPQ (PQ h) = findHeap h
+% frontPQ (PQ h) = findHeap h
+frontPQ(H) -> findHeap(H).
 
-%% dePQ (PQ h) = PQ (delHeap h)
+% dePQ (PQ h) = PQ (delHeap h)
+dePQ(H) -> delHeap(H).
 
-%% {-- end of Heap implementation --}
+% {-- end of Heap implementation --}
