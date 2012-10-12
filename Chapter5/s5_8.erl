@@ -7,12 +7,13 @@
 % Erlang translations by Stephen Wight, northwight@gmail.com
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% module S5_8 where
-
 %% import Heap
 %% import PQueue
+-module(s5_8).
+-import(heap, []).
+-import(pqueue, []).
 
 %% {- examples of calls and results
-
 %% S5_8> insHeap 3 emptyHeap
 %% HP 3 1 EmptyHP EmptyHP
 %% S5_8> insHeap 1 $$
