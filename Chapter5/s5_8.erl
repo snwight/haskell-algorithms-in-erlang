@@ -14,7 +14,7 @@
 -import(pqueue, []).
 
 %% {- examples of calls and results
-%% S5_8> insHeap 3 emptyHeap
+%% S5_8> insHeap(3, emptyHeap()).
 %% HP 3 1 EmptyHP EmptyHP
 %% S5_8> insHeap 1 $$
 %% HP 1 1 (HP 3 1 EmptyHP EmptyHP) EmptyHP
