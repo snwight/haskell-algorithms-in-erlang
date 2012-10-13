@@ -55,8 +55,9 @@ rem34B(Pqrsxs) ->
 removeFirst(_, []) -> [];
 removeFirst(X, [Y|YS]) ->
     if X =:= Y -> YS;
-       X =/= Y -> [Y | removeFirst(X, YS)]
+       X =/= Y -> [Y|removeFirst(X, YS)]
     end.
+
 perms([]) -> [[]];
 perms(XS) -> [[X|P] || X <- XS, P <- perms(removeFirst(X, XS))].
 

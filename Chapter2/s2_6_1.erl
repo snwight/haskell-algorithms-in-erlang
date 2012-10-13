@@ -25,7 +25,7 @@ yElt(#coord{y=Y}) -> Y.
 firstQuad([]) -> true;
 firstQuad([#coord{x=X, y=Y}|CS]) ->
     if X >= 0, Y >= 0 -> firstQuad(CS);
-       X < 0; Y < 0 -> false
+       X < 0 orelse Y < 0 -> false
     end.
 
 % {----- Examples of evaluations and results

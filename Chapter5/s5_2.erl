@@ -9,27 +9,26 @@
 % module s5_2 where
 % import Stack
 -module(s5_2).
--import(stack, [emptyStack/0, stackEmpty/1, push/2, pop/1, top/1]).
 -export([s1/0]).
 
 % s1 = push 1 (push 2 (push 3 emptyStack))
-s1() -> push(1, push(2, push(3, emptyStack()))).
+s1() -> stack:push(1, stack:push(2, stack:push(3, stack:emptyStack()))).
 
 % {- examples of evaluations and results
 %    with both implementations
-% ? s1
+% ? s1().
 % 1|2|3|-
-% ? push 4 s1
+% ? stack:push(4, s1()).
 % 4|1|2|3|-
-% ? pop s1
+% ? stack:pop(s1()).
 % 2|3|-
-% ? top s1
+% ? stack:top(s1()).
 % 1
-% ? stackEmpty s1
+% ? stack:stackEmpty(s1()).
 % False
-% ? stackEmpty emptyStack
+% ? stack:stackEmpty(emptyStack()).
 % True
-% ? push "hello" (push "world" emptyStack)
+% ? stack:push("hello", (stack:push("world", stack:emptyStack()).
 % "hello"|"world"|-
 % ----}
 

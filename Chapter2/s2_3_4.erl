@@ -8,9 +8,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % module S2_3_4 where
 -module(s2_3_4).
--export([later/2, distance/2, roots/3]).
--export([t1/0,t2/0,t3/0]).
--import(math, [sqrt/1, pow/2]).
+-export([later/2, distance/2, roots/3, t1/0, t2/0, t3/0]).
 
 % t1 = (3, True)
 % t2 = (14.8, 'd', 34)
@@ -35,27 +33,27 @@ later({H1, M1, S1}, {H2, M2, S2}) ->
     end.
 
 % distance (x1, y1) (x2, y2)
-%     = sqrt (dx * dx + dy * dy)
+%     = math:sqrt (dx * dx + dy * dy)
 %       where
 %       dx = x2 - x1
 %       dy = y2 - y1
 distance({X1, Y1}, {X2, Y2}) ->
     DX = X2 - X1,
     DY = Y2 - Y1,
-    sqrt(DX * DX + DY * DY).
+    math:sqrt(DX * DX + DY * DY).
 
 % roots (a, b, c) = (r1, r2)
 %     where
 %     r1         = (-b + r) / f
 %     r2         = (-b - r) / f
 %     f          = 2 * a
-%     r | d >= 0 = sqrt d
+%     r | d >= 0 = math:sqrt d
 %       | d < 0  = error "imaginary roots"
 %     d          = b * b - 4 * a * c
 roots(A, B, C) ->
     D = B * B - 4 * A * C,
     if D < 0 -> erlang:error("imaginary roots!!");
-       D >= 0 -> {(-B + sqrt(D)) / 2 * A, (-B - sqrt(D)) / 2 * A}
+       D >= 0 -> {(-B + math:sqrt(D)) / 2 * A, (-B - math:sqrt(D)) / 2 * A}
     end.
 
 % {----- Examples of evaluations and results

@@ -9,13 +9,12 @@
 % module S5_3 where
 % import Queue
 -module(s5_3).
--import(queue, 
-	[emptyQueue/0, queueEmpty/1, enqueue/2, dequeue/1, front/1, showQ/1]).
 -export([test/0]).
 
 % test = foldr enqueue emptyQueue [1..10]
 test() ->
-    showQ(lists:foldr(fun queue:enqueue/2, emptyQueue(), lists:seq(1,10))).
+    queue:showQ(lists:foldr(fun queue:enqueue/2, 
+			    queue:emptyQueue(), lists:seq(1,10))).
 
 % {-  examples of evaluations and results
 % ? test

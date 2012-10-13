@@ -9,7 +9,6 @@
 % module S5_9 where
 % import AVLTree
 -module(s5_9).
--import(avltree, []).
 -export([t/0]).
 
 % {- examples of calls and results

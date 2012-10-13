@@ -10,13 +10,11 @@
 %% import Heap
 %% import PQueue
 -module(s5_8).
--import(heap, []).
--import(pqueue, []).
 
 %% {- examples of calls and results
-%% S5_8> insHeap(3, emptyHeap()).
+%% S5_8> heap:insHeap(3, heap:emptyHeap()).
 %% HP 3 1 EmptyHP EmptyHP
-%% S5_8> insHeap 1 $$
+%% S5_8> heap:insHeap(1, heap:insHeap(3, heap:emptyHeap())). 
 %% HP 1 1 (HP 3 1 EmptyHP EmptyHP) EmptyHP
 %% S5_8> insHeap 4 $$
 %% HP 1 2 (HP 3 1 EmptyHP EmptyHP) (HP 4 1 EmptyHP EmptyHP)
