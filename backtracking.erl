@@ -9,7 +9,10 @@
 % -- BACKTRACKING FRAMEWORK
 % module Backtracking where
 -module(backtracking).
--export([]).
+-export([flatten/1, emptyStack/0, stackEmpty/1, push/2, pop/1, top/1]).
+-export([emptyHeap/0, heapEmpty/1, findHeap/2, insHeap/2, delHeap/2, pdown/1]).
+-export([emptyPQ/0, pqEmpty/1, enPQ/2, frontPQ/1, dePQ/1]).
+-export([searchDfs/3, search1/3, searchPfs/3, search2/3]).
 
 % --import "../haskell/ListOps.hs"
 %% (\\) xs1 xs2 = foldl del xs1 xs2
@@ -24,9 +27,8 @@
 %%        X =/= Y -> [X | (XS `del` Y)]
 %%     end,
 %%     lists:foldl( del , XS1, XS2).
-
-flatten = foldr (++) []
-flatter(L) -> lists:foldr(fun(Elem, Acc) -> Elem ++ Acc end, [], L).
+%% flatten = foldr (++) []
+flatten(L) -> lists:foldr(fun(Elem, Acc) -> Elem ++ Acc end, [], L).
 
 % ---------------------------------------------------
 % --import "../adt/Stack.hs"
@@ -78,13 +80,13 @@ heapEmpty(_) -> false.
 %      | (n==1)             = v
 %      | ((n `mod` 2) == 0) = findHeap (n `div` 2) lf
 %      | otherwise          = findHeap (n `div` 2) rt
-findHeap(N, {V, LF, RT}) when N =:= 1 -> V;
+findHeap(N, {V, _, _}) when N =:= 1 -> V;
 findHeap(N, {_, LF, _}) when N rem 2 =:= 0 -> findHeap(N div 2, LF);
 findHeap(N, {_, _, RT}) -> findHeap(N div 2, RT).
 
 % insHeap (n,k) Empty 
 %                 = (Node  k Empty Empty)
-insHeap({N, K}, empty) -> {K, empty, empty};
+insHeap({_, K}, empty) -> {K, empty, empty};
 
 % insHeap (n,k) (Node v lf rt) 
 %      | v < k    = if ((n `mod` 2) == 0)
@@ -119,7 +121,7 @@ delHeap(1, {V, empty, empty}) -> {V, empty};
 delHeap(K, {V, LF, RT}) when K rem 2 =:= 0 ->
     {V1, Rest} = delHeap(K div 2, LF), {V1, {V, Rest, RT}};
 delHeap(K, {V, LF, RT}) ->
-    {V1, Rest} = delHeap(K div 2, RT), {V1, {V, lf, Rest}}.
+    {V1, Rest} = delHeap(K div 2, RT), {V1, {V, LF, Rest}}.
 
 % pdown (v , Empty)     = Empty
 % pdown (v , (Node _ Empty Empty)) 
@@ -134,23 +136,19 @@ delHeap(K, {V, LF, RT}) ->
 %           | otherwise = if v < b
 %                         then (Node v n1 n2)
 %                         else (Node b n1 (pdown (v , n2) ))
-pdown({V, empty}) -> empty;
+pdown({_, empty}) -> empty;
 pdown({V, {_, empty, empty}}) -> {V, empty, empty};
 pdown({V, {_, {A, LF, RT}, empty}}) ->
     if A < V -> {A, {V, LF, RT}, empty};
        A >= V -> {V, {A, LF, RT}, empty}
     end;
-pdown({V, {_, {A, _a, _b}, {B, _c, _d}}}) ->
-    if A < B ->
-	    if V < A -> {V, {A, _a, _b}, {B, _c, _d}};
-	       V >= A -> {A, pdown({V, {A, _a, _b}}), {B, _c, _d}}
-	    end;
-       A >= B ->
-	    if V < B -> 
-		    {V, {A, _a, _b}, {B, _c, _d}};
-	       V >= B -> 
-		    {B, {A, _a, _b}, pdown({V, {B, _c, _d}})}
-	    end
+pdown({V, {_, {A, _a, _b}, {B, _c, _d}}}) when A < B ->
+    if V < A -> {V, {A, _a, _b}, {B, _c, _d}};
+       V >= A -> {A, pdown({V, {A, _a, _b}}), {B, _c, _d}}
+    end;
+pdown({V, {_, {A, _a, _b}, {B, _c, _d}}}) when A >= B ->
+    if V < B -> {V, {A, _a, _b}, {B, _c, _d}};
+       V >= B -> {B, {A, _a, _b}, pdown({V, {B, _c, _d}})}
     end.
 
 % ------------------------------------------------------------------------
@@ -205,14 +203,19 @@ dePQ({S, T}) ->
 %     | goal (top s)     = (top s):(search' (pop s))
 %     | otherwise        = let x = top s
 %                        in search' (foldr push (pop s) (succ x))
-
-%% searchDfs(Succ, Goal, X) -> search1(push(X, emptyStack())). 
-%% search1(S) -> 
-%%    case S of 
-%%        stackEmpty(S) -> [];
-%%        Goal(top(S)) -> [top(S)|search1(pop(S))];
-%%        _ -> search1(lists:foldr(heap:push/2, pop(S), Succ(top(S))))
-%%   end.
+searchDfs(Succ, Goal, X) -> 
+    search1(Succ, Goal, push(X, emptyStack())).
+search1(Succ, Goal, S) -> 
+    case stackEmpty(S) of 
+	true -> [];
+	false -> 
+	    case Goal(top(S)) of 
+		true -> [top(S)|search1(Succ, Goal, pop(S))];
+		false -> search1(Succ, Goal, lists:foldr(fun heap:push/2, 
+							 pop(S), 
+							 Succ(top(S))))
+	    end
+    end.
 
 % ----------------------------------------------------------------------
 % ---------------------------------------------------------------------
@@ -228,6 +231,19 @@ dePQ({S, T}) ->
 %     | goal (frontPQ q) = (frontPQ q):(search' (dePQ q))
 %     | otherwise        = let x = frontPQ q
 %                          in search' (foldr enPQ (dePQ q) (succ x))
+searchPfs(Succ, Goal, X) ->
+    search2(Succ, Goal, enPQ(X, emptyPQ())).
+search2(Succ, Goal, Q) ->
+    case pqEmpty(Q) of
+	true -> [];
+	false -> 
+	    case Goal(frontPQ(Q)) of
+		true -> [frontPQ(Q)|search2(Succ, Goal, dePQ(Q))];
+		false -> search2(Succ, Goal, lists:foldr(fun enPQ/2, 
+							 dePQ(Q), 
+							 Succ(frontPQ(Q))))
+	    end
+    end.
 
 % --------------------------------------------------------------------
 % --Also counts how many nodes examined
