@@ -128,11 +128,11 @@ pdown(_, emptyBT) -> emptyBT;
 pdown(V1, {_, emptyBT, emptyBT}) -> {V1, emptyBT, emptyBT};
 pdown(V1, {_, {V, LF, RT}, emptyBT}) when V < V1 -> {V, {V1, LF, RT}, emptyBT};
 pdown(V1, {_, {V, LF, RT}, emptyBT}) -> {V1, {V, LF, RT}, emptyBT};
-pdown(V1, {_, {Vlf, _a, _b}, {Vrt, _c, _d}}) when Vlf < Vrt, V1 < Vlf ->
-    {V1, {Vlf, _a, _b}, {Vrt, _c, _d}};
-pdown(V1, {_, {Vlf, _a, _b}, {Vrt, _c, _d}}) when Vlf < Vrt, V1 >= Vlf ->
-    {V1, pdown(V1, {Vlf, _a, _b}), {Vrt, _c, _d}};
-pdown(V1, {_, {Vlf, _a, _b}, {Vrt, _c, _d}}) when V1 < Vrt, V1 < Vrt ->
-    {V1, {Vlf, _a, _b}, {Vrt, _c, _d}};
-pdown(V1, {_, {Vlf, _a, _b}, {Vrt, _c, _d}}) when V1 < Vrt, V1 >= Vrt ->
-    {Vrt, {Vlf, _a, _b}, pdown(V1, {Vrt, _c, _d})}.
+pdown(V1, {_, {Vlf, _a, _b}, {Vrt, _c, _d}}) when Vlf < Vrt ->
+    if V1 < Vlf -> {V1, {Vlf, _a, _b}, {Vrt, _c, _d}};
+       V1 >= Vlf -> {V1, pdown(V1, {Vlf, _a, _b}), {Vrt, _c, _d}}
+    end;
+pdown(V1, {_, {Vlf, _a, _b}, {Vrt, _c, _d}}) when Vlf >= Vrt ->
+    if V1 < Vrt -> {V1, {Vlf, _a, _b}, {Vrt, _c, _d}};
+       V1 >= Vrt -> {Vrt, {Vlf, _a, _b}, pdown(V1, {Vrt, _c, _d})}
+    end.
