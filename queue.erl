@@ -16,31 +16,31 @@
 % dequeue    :: Queue a -> Queue a
 % front      :: Queue a -> a
 
-%% % {-  Implementation with a list  -
+% % {-  Implementation with a list  -
 
-%% % newtype Queue a   = Q [a]
-%% %    deriving Show
+% % newtype Queue a   = Q [a]
+% %    deriving Show
 
-%% % emptyQueue     = Q []
-%% emptyQueueA() -> [].
+% % emptyQueue     = Q []
+emptyQueueA() -> [].
 
-%% % queueEmpty (Q [])  = True
-%% % queueEmpty (Q _ )  = False
-%% queueEmptyA([]) -> true;
-%% queueEmptyA(_) -> false.
+% % queueEmpty (Q [])  = True
+% % queueEmpty (Q _ )  = False
+queueEmptyA([]) -> true;
+queueEmptyA(_) -> false.
 
-%% % enqueue x (Q q)    = Q (q ++ [x])
-%% enqueueA(X, Q) -> Q ++ [X].
+% % enqueue x (Q q)    = Q (q ++ [x])
+enqueueA(X, Q) -> Q ++ [X].
 
-%% % dequeue (Q (_:xs)) = Q xs
-%% % dequeue (Q [])     = error "dequeue: empty queue"
-%% dequeueA([_|XS]) -> XS;
-%% dequeueA([]) -> error("dequeue: empty queue").
+% % dequeue (Q (_:xs)) = Q xs
+% % dequeue (Q [])     = error "dequeue: empty queue"
+dequeueA([_|XS]) -> XS;
+dequeueA([]) -> error("dequeue: empty queue").
 
-%% % front (Q (x:_)) = x
-%% % front (Q [])    = error "front: empty queue"
-%% frontA([X|_]) -> X;
-%% frontA([]) -> error("front: empty queue").
+% % front (Q (x:_)) = x
+% % front (Q [])    = error "front: empty queue"
+frontA([X|_]) -> X;
+frontA([]) -> error("front: empty queue").
 
 % -  end of list implementation -}
 

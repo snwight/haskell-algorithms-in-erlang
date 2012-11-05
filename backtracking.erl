@@ -9,10 +9,11 @@
 % -- BACKTRACKING FRAMEWORK
 % module Backtracking where
 -module(backtracking).
+-export([del/2, slashslash/2]).
 -export([flatten/1, emptyStack/0, stackEmpty/1, push/2, pop/1, top/1]).
 -export([emptyHeap/0, heapEmpty/1, findHeap/2, insHeap/2, delHeap/2, pdown/1]).
 -export([emptyPQ/0, pqEmpty/1, enPQ/2, frontPQ/1, dePQ/1]).
--export([searchDfs/3, search1/3, searchPfs/3, search2/3]).
+-export([searchDfs/3, searchA/3, searchPfs/3, searchB/3, searchPfs2/3, searchC/4]).
 
 % --import "../haskell/ListOps.hs"
 %% (\\) xs1 xs2 = foldl del xs1 xs2
@@ -20,13 +21,12 @@
 %%              (x:xs) `del`  y
 %%                  | x == y    = xs
 %%                  | otherwise = x : (xs `del` y)
-%% slashslash(XS1, XS2) ->
-%%     [] `del`  _ = [],
-%%     [X|XS] `del`  Y,
-%%     if X =:= Y -> XS;
-%%        X =/= Y -> [X | (XS `del` Y)]
-%%     end,
-%%     lists:foldl( del , XS1, XS2).
+%% nb: interesting... but i'll keep this infix for now
+del([], _) -> [];
+del([X|XS], Y) when X =:= Y -> XS;
+del([X|XS], Y) when X =/= Y -> [X | del(XS, Y)].
+slashslash(XS1, XS2) -> lists:foldl(fun del/2, XS1, XS2).
+
 %% flatten = foldr (++) []
 flatten(L) -> lists:foldr(fun(Elem, Acc) -> Elem ++ Acc end, [], L).
 
@@ -203,15 +203,14 @@ dePQ({S, T}) ->
 %     | goal (top s)     = (top s):(search' (pop s))
 %     | otherwise        = let x = top s
 %                        in search' (foldr push (pop s) (succ x))
-searchDfs(Succ, Goal, X) -> 
-    search1(Succ, Goal, push(X, emptyStack())).
-search1(Succ, Goal, S) -> 
+searchDfs(Succ, Goal, X) -> searchA(Succ, Goal, push(X, emptyStack())).
+searchA(Succ, Goal, S) -> 
     case stackEmpty(S) of 
 	true -> [];
 	false -> 
 	    case Goal(top(S)) of 
-		true -> [top(S)|search1(Succ, Goal, pop(S))];
-		false -> search1(Succ, Goal, lists:foldr(fun heap:push/2, 
+		true -> [top(S)|searchA(Succ, Goal, pop(S))];
+		false -> searchA(Succ, Goal, lists:foldr(fun heap:push/2, 
 							 pop(S), 
 							 Succ(top(S))))
 	    end
@@ -231,15 +230,14 @@ search1(Succ, Goal, S) ->
 %     | goal (frontPQ q) = (frontPQ q):(search' (dePQ q))
 %     | otherwise        = let x = frontPQ q
 %                          in search' (foldr enPQ (dePQ q) (succ x))
-searchPfs(Succ, Goal, X) ->
-    search2(Succ, Goal, enPQ(X, emptyPQ())).
-search2(Succ, Goal, Q) ->
+searchPfs(Succ, Goal, X) -> searchB(Succ, Goal, enPQ(X, emptyPQ())).
+searchB(Succ, Goal, Q) ->
     case pqEmpty(Q) of
 	true -> [];
 	false -> 
 	    case Goal(frontPQ(Q)) of
-		true -> [frontPQ(Q)|search2(Succ, Goal, dePQ(Q))];
-		false -> search2(Succ, Goal, lists:foldr(fun enPQ/2, 
+		true -> [frontPQ(Q)|searchB(Succ, Goal, dePQ(Q))];
+		false -> searchB(Succ, Goal, lists:foldr(fun enPQ/2, 
 							 dePQ(Q), 
 							 Succ(frontPQ(Q))))
 	    end
@@ -257,4 +255,16 @@ search2(Succ, Goal, Q) ->
 % --     | goal (frontPQ q) = ((frontPQ q),c+1):(search' (dePQ q)(c+1))
 % --     | otherwise        = let x = frontPQ q
 % --                          in search' (foldr enPQ (dePQ q) (succ x)) (c+1)
+searchPfs2(Succ, Goal, X) ->  searchC(Succ, Goal, enPQ(X, emptyPQ()), 0).
+searchC(Succ, Goal, Q, C) ->
+    case pqEmpty(Q) of
+	true -> [];
+	false -> 
+	    case Goal(frontPQ(Q)) of
+		true -> [{frontPQ(Q), C+1}|searchC(Succ, Goal, dePQ(Q), C+1)];
+		false -> searchC(Succ, Goal, 
+				 lists:foldr(fun enPQ/2, dePQ(Q), Succ(frontPQ(Q))),
+				 C+1)
+	    end
+    end.
 
